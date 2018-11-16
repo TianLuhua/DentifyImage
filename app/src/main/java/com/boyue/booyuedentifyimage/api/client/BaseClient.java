@@ -13,6 +13,8 @@
 package com.boyue.booyuedentifyimage.api.client;
 
 
+import android.util.Log;
+
 import com.boyue.booyuedentifyimage.api.auth.CloudAuth;
 import com.boyue.booyuedentifyimage.api.auth.DevAuth;
 import com.boyue.booyuedentifyimage.api.error.AipError;
@@ -39,6 +41,8 @@ import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class BaseClient {
+
+    public static final String TAG = "BaseClient";
 
     protected String appId;
     protected String aipKey;
@@ -196,7 +200,11 @@ public abstract class BaseClient {
             }
             return;
         }
+
         JSONObject res = DevAuth.oauth(aipKey, aipToken, config);
+
+        Log.e(TAG, res.toString());
+
         if (res == null) {
             LOGGER.warn("oauth get null response");
             return;
@@ -206,7 +214,8 @@ public abstract class BaseClient {
             state.transfer(true);
             try {
                 accessToken = res.getString("access_token");
-                LOGGER.info("get access_token success. current state: " + state.toString());
+                Log.e(TAG,accessToken);
+                LOGGER.info("get access_token success. current state: " + state.toString()+" accessToken:"+accessToken);
                 Integer expireSec = res.getInt("expires_in");
                 Calendar c = Calendar.getInstance();
                 c.add(Calendar.SECOND, expireSec);
@@ -229,7 +238,6 @@ public abstract class BaseClient {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
 
         } else if (!res.isNull("error_code")) {
             state.transfer(false);

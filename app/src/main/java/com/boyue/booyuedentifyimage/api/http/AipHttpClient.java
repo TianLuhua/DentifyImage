@@ -12,6 +12,8 @@
  */
 package com.boyue.booyuedentifyimage.api.http;
 
+import android.util.Log;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -26,6 +28,7 @@ import java.util.Map;
 
 public class AipHttpClient {
 
+    public static final String TAG = "AipHttpClient";
 
     /**
      * post方式请求服务器(https协议)
@@ -45,8 +48,7 @@ public class AipHttpClient {
         try {
             if (request.getParams().isEmpty()) {
                 url = request.getUri().toString();
-            }
-            else {
+            } else {
                 url = String.format("%s?%s", request.getUri().toString(), request.getParamStr());
             }
 

@@ -1,4 +1,4 @@
-package com.boyue.booyuedentifyimage
+package com.boyue.booyuedentifyimage.ui
 
 import android.Manifest
 import android.app.Activity
@@ -20,15 +20,10 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.Toast
 import com.booyue.utils.ToastUtils
-import com.boyue.booyuedentifyimage.api.imagesearch.ImageSearchConsts
-import com.boyue.booyuedentifyimage.api.util.Base64Util
-import com.boyue.booyuedentifyimage.bean.ResultBean
-import com.boyue.booyuedentifyimage.utils.AuthService
-import com.boyue.booyuedentifyimage.utils.HttpUtil
-import com.google.gson.Gson
+import com.boyue.booyuedentifyimage.R
+import com.boyue.booyuedentifyimage.api.imagesearch.AipImageSearch
+import com.boyue.booyuedentifyimage.utils.runOnIoThread
 import java.io.IOException
-import java.io.UnsupportedEncodingException
-import java.net.URLEncoder
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,7 +40,7 @@ class MainActivity : AppCompatActivity() {
     private var number_camera = 0          //摄像头个数
     private val which_camera = 0           //打开哪个摄像头
 
-    private var accessToken: String? = null//来自百度云的认证信息
+//    private var accessToken: String? = null//来自百度云的认证信息
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,20 +49,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         bindViews()
         init()
-        getAccessToken()
+//        getAccessToken()
         number_camera = Camera.getNumberOfCameras()
     }
 
-    private fun getAccessToken() {
-        Thread(Runnable {
-            AuthService.getAuth(object : AuthService.AccessTokenCallBack {
-                override fun resultCallBack(access_token: String?) {
-                    Log.e("result", access_token)
-                    accessToken = access_token
-                }
-            })
-        }).start()
-    }
+//    private fun getAccessToken() {
+//        runOnIoThread {
+//            AuthService.getAuth {
+//                Log.e("result", it)
+//                accessToken = it
+//            }
+//        }
+//    }
 
     private fun initanim() {
         val animation = AnimationUtils.loadAnimation(this@MainActivity, R.anim.img_anim)
@@ -95,13 +88,7 @@ class MainActivity : AppCompatActivity() {
      * @return
      */
     private fun checkCameraHardware(context: Context): Boolean {
-        return if (context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-            // 摄像头存在
-            true
-        } else {
-            // 摄像头不存在
-            false
-        }
+        return context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)
 
     }
 
@@ -215,32 +202,41 @@ class MainActivity : AppCompatActivity() {
 //                outputStream.close()
 //                camera.stopPreview()
 //                camera.startPreview()//处理完数据之后可以预览
+                runOnIoThread {
+                    val client = AipImageSearch("14795579", "MdOoOFdeptRjcAyvTP5L094i", "Ad4cnllYQGS3IRgZ2dLGIW5naeLtGGmc")
+                    val params = HashMap<String, String>()
+                    params.put("tags", "1")
+                    var result = client.sameHqSearch(data, params)
+                    Log.e("result", result.toString())
+                    runOnUiThread { ToastUtils.showLongToast(result.toString()) }
+                }
 
-                Thread {
-                    try {
-                        val image = Base64Util.encode(data)
-                        val params = URLEncoder.encode("image", "UTF-8") + "=" + URLEncoder.encode(image, "UTF-8")
-                        Log.e("params", params)
-                        val result = HttpUtil.post(ImageSearchConsts.SAME_HQ_SEARCH, accessToken, params)
-                        Log.e("result", result)
-                        val gson = Gson()
-                        val resultBean = gson.fromJson(result, ResultBean::class.java)
-                        val resultResponseBeans = resultBean.getResult()
-                        if (resultResponseBeans.size > 0) {
-                            val resultResponseBean = resultResponseBeans.get(0)
-                            //                                Log.e("result Brief", resultResponseBean.toString());
-                            runOnUiThread { ToastUtils.showLongToast(resultResponseBean.getBrief()) }
 
-                        } else {
-                            runOnUiThread { ToastUtils.showLongToast("没有找到结果！！") }
-                        }
-
-                    } catch (e: UnsupportedEncodingException) {
-                        e.printStackTrace()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }.start()
+//                runOnIoThread {
+//                    try {
+//                        val image = Base64Util.encode(data)
+//                        val params = URLEncoder.encode("image", "UTF-8") + "=" + URLEncoder.encode(image, "UTF-8")
+//                        Log.e("params", params)
+//                        val result = HttpUtil.post(ImageSearchConsts.SAME_HQ_SEARCH, accessToken, params)
+//                        Log.e("result", result)
+//                        val gson = Gson()
+//                        val resultBean = gson.fromJson(result, ResultBean::class.java)
+//                        val resultResponseBeans = resultBean.getResult()
+//                        if (resultResponseBeans.size > 0) {
+//                            val resultResponseBean = resultResponseBeans.get(0)
+//                            //                                Log.e("result Brief", resultResponseBean.toString());
+//                            runOnUiThread { ToastUtils.showLongToast(resultResponseBean.getBrief()) }
+//
+//                        } else {
+//                            runOnUiThread { ToastUtils.showLongToast("没有找到结果！！") }
+//                        }
+//
+//                    } catch (e: UnsupportedEncodingException) {
+//                        e.printStackTrace()
+//                    } catch (e: Exception) {
+//                        e.printStackTrace()
+//                    }
+//                }
             } catch (e: Exception) {
                 Log.e("Exception", "Exception : " + e.message)
             }

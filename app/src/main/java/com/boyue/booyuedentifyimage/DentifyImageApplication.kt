@@ -7,7 +7,7 @@ import com.booyue.utils.Utils
  * Created by Tianluhua on 2018\11\16 0016.
  */
 
-public class DentifyImageApplication : Application() {
+class DentifyImageApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         Utils.init(this)
