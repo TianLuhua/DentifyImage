@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">BooyueDentifyImage</string>
+
+    <!--普通-->
+    <string name="nonsupport_camera">当前设备不支持摄像头！</string>
+
+    <!--封面-->
+    <string name="i_do_not_know_this_book">我不认识这本书！</string>
+
+    <!--读书-->
+
 </resources>

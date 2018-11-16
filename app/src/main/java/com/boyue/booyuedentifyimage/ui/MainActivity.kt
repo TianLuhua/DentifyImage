@@ -6,10 +6,13 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.PixelFormat
 import android.hardware.Camera
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -22,7 +25,11 @@ import android.widget.Toast
 import com.booyue.utils.ToastUtils
 import com.boyue.booyuedentifyimage.R
 import com.boyue.booyuedentifyimage.api.imagesearch.AipImageSearch
+import com.boyue.booyuedentifyimage.bean.ResultResponseBean
 import com.boyue.booyuedentifyimage.utils.runOnIoThread
+import com.google.gson.Gson
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
@@ -40,30 +47,17 @@ class MainActivity : AppCompatActivity() {
     private var number_camera = 0          //摄像头个数
     private val which_camera = 0           //打开哪个摄像头
 
-//    private var accessToken: String? = null//来自百度云的认证信息
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initdata()
         setContentView(R.layout.activity_main)
         bindViews()
         init()
-//        getAccessToken()
         number_camera = Camera.getNumberOfCameras()
     }
 
-//    private fun getAccessToken() {
-//        runOnIoThread {
-//            AuthService.getAuth {
-//                Log.e("result", it)
-//                accessToken = it
-//            }
-//        }
-//    }
-
     private fun initanim() {
-        val animation = AnimationUtils.loadAnimation(this@MainActivity, R.anim.img_anim)
+        val animation = AnimationUtils.loadAnimation(applicationContext, R.anim.img_anim)
         img_photo!!.startAnimation(animation)
     }
 
@@ -73,11 +67,10 @@ class MainActivity : AppCompatActivity() {
      */
     private fun initCamera() {
         //设备支持摄像头才创建实例
-        if (checkCameraHardware(this@MainActivity)) {
+        if (checkCameraHardware(applicationContext)) {
             mCamera = getCameraInstance()//打开硬件摄像头，这里导包得时候一定要注意是android.hardware.Camera
-            mCamera!!.setDisplayOrientation(180 / 2)
         } else {
-            Toast.makeText(this@MainActivity, "当前设备不支持摄像头", Toast.LENGTH_SHORT).show()
+            ToastUtils.showToast(R.string.nonsupport_camera)
         }
     }
 
@@ -89,7 +82,6 @@ class MainActivity : AppCompatActivity() {
      */
     private fun checkCameraHardware(context: Context): Boolean {
         return context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)
-
     }
 
     /**
@@ -112,7 +104,6 @@ class MainActivity : AppCompatActivity() {
                 Log.e("sda", e.toString())
                 // 摄像头不可用（正被占用或不存在）
             }
-
         }
         return c // 不可用则返回null
     }
@@ -138,12 +129,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 })
             }
-            try {
-                Toast.makeText(this@MainActivity, preview!!.childCount, Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-
-            }
-
         } else {
             Toast.makeText(this@MainActivity, "打开摄像头失败", Toast.LENGTH_SHORT).show()
         }
@@ -185,62 +170,39 @@ class MainActivity : AppCompatActivity() {
 
     private inner class TakePictureCallback : Camera.PictureCallback {
         override fun onPictureTaken(data: ByteArray, camera: Camera) {
-            try {
-//                val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
-//                img_photo!!.visibility = View.VISIBLE
-//                img_photo!!.setImageBitmap(bitmap)
-//                initanim()
-//                val filePar = File(Environment.getExternalStorageDirectory().toString() + "/videoappimg")
-//                //如果不存在这个文件夹就去创建
-//                if (!filePar.exists()) {
-//                    filePar.mkdirs()
-//                }
-//                val file = File(Environment.getExternalStorageDirectory(), "/videoappimg/" + "videoapp_" + System.currentTimeMillis() + ".jpg")
-//                val outputStream = FileOutputStream(file)
-//                imgUri = Uri.fromFile(file)
-//                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-//                outputStream.close()
-//                camera.stopPreview()
-//                camera.startPreview()//处理完数据之后可以预览
-                runOnIoThread {
-                    val client = AipImageSearch("14795579", "MdOoOFdeptRjcAyvTP5L094i", "Ad4cnllYQGS3IRgZ2dLGIW5naeLtGGmc")
-                    val params = HashMap<String, String>()
-                    params.put("tags", "1")
-                    var result = client.sameHqSearch(data, params)
-                    Log.e("result", result.toString())
-                    runOnUiThread { ToastUtils.showLongToast(result.toString()) }
-                }
-
-
-//                runOnIoThread {
-//                    try {
-//                        val image = Base64Util.encode(data)
-//                        val params = URLEncoder.encode("image", "UTF-8") + "=" + URLEncoder.encode(image, "UTF-8")
-//                        Log.e("params", params)
-//                        val result = HttpUtil.post(ImageSearchConsts.SAME_HQ_SEARCH, accessToken, params)
-//                        Log.e("result", result)
-//                        val gson = Gson()
-//                        val resultBean = gson.fromJson(result, ResultBean::class.java)
-//                        val resultResponseBeans = resultBean.getResult()
-//                        if (resultResponseBeans.size > 0) {
-//                            val resultResponseBean = resultResponseBeans.get(0)
-//                            //                                Log.e("result Brief", resultResponseBean.toString());
-//                            runOnUiThread { ToastUtils.showLongToast(resultResponseBean.getBrief()) }
-//
-//                        } else {
-//                            runOnUiThread { ToastUtils.showLongToast("没有找到结果！！") }
-//                        }
-//
-//                    } catch (e: UnsupportedEncodingException) {
-//                        e.printStackTrace()
-//                    } catch (e: Exception) {
-//                        e.printStackTrace()
-//                    }
-//                }
-            } catch (e: Exception) {
-                Log.e("Exception", "Exception : " + e.message)
+            val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
+            img_photo!!.visibility = View.VISIBLE
+            img_photo!!.setImageBitmap(bitmap)
+            initanim()
+            val filePar = File(Environment.getExternalStorageDirectory().toString() + "/videoappimg")
+            //如果不存在这个文件夹就去创建
+            if (!filePar.exists()) {
+                filePar.mkdirs()
             }
-
+            val file = File(Environment.getExternalStorageDirectory(), "/videoappimg/" + "videoapp_" + System.currentTimeMillis() + ".jpg")
+            val outputStream = FileOutputStream(file)
+            imgUri = Uri.fromFile(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            outputStream.close()
+            camera.stopPreview()
+            camera.startPreview()//处理完数据之后可以预览
+            runOnIoThread {
+                val client = AipImageSearch("14795579", "MdOoOFdeptRjcAyvTP5L094i", "Ad4cnllYQGS3IRgZ2dLGIW5naeLtGGmc")
+                val params = HashMap<String, String>()
+                params.put("tags", "1")
+                var resultJson = client.sameHqSearch(data, params)
+                Log.e("result", resultJson.toString())
+                val gson = Gson()
+                var resultsRespons = gson.fromJson(resultJson.toString(), ResultResponseBean::class.java)
+                val results = resultsRespons.result
+                val maxResult = results.maxBy {
+                    it.score
+                }
+                runOnUiThread {
+                    ToastUtils.showLongToast(maxResult?.brief
+                            ?: getString(R.string.i_do_not_know_this_book))
+                }
+            }
         }
     }
 
@@ -329,15 +291,14 @@ class MainActivity : AppCompatActivity() {
                 mCamera!!.stopPreview()
             } catch (e: Exception) {
                 // 忽略：试图停止不存在的预览
+                Log.d(TAG, "Error stopPreview : " + e.message)
             }
-
             // 在此进行缩放、旋转和重新组织格式
             // 以新的设置启动预览
             try {
                 mCamera!!.setPreviewDisplay(mHolder)
                 mCamera.startPreview()
             } catch (e: Exception) {
-
                 Log.d(TAG, "Error starting camera preview: " + e.message)
             }
 
