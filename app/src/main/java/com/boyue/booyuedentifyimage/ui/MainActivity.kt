@@ -17,10 +17,10 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.view.*
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import android.view.View
 import android.view.animation.AnimationUtils
-import android.widget.ImageView
-import android.widget.RelativeLayout
 import android.widget.Toast
 import com.booyue.utils.ToastUtils
 import com.boyue.booyuedentifyimage.R
@@ -28,6 +28,7 @@ import com.boyue.booyuedentifyimage.api.imagesearch.AipImageSearch
 import com.boyue.booyuedentifyimage.bean.ResultResponseBean
 import com.boyue.booyuedentifyimage.utils.runOnIoThread
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -41,19 +42,14 @@ class MainActivity : AppCompatActivity() {
     private var isPreview = false
     private var mCamera: Camera? = null
     private var mPreview: CameraPreview? = null
-    private var preview: RelativeLayout? = null
-    private var img_photo: ImageView? = null
     private var imgUri: Uri? = null              //图片URI
-    private var number_camera = 0          //摄像头个数
     private val which_camera = 0           //打开哪个摄像头
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initdata()
         setContentView(R.layout.activity_main)
-        bindViews()
+        initView()
         init()
-        number_camera = Camera.getNumberOfCameras()
     }
 
     private fun initanim() {
@@ -67,21 +63,11 @@ class MainActivity : AppCompatActivity() {
      */
     private fun initCamera() {
         //设备支持摄像头才创建实例
-        if (checkCameraHardware(applicationContext)) {
+        if (application.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             mCamera = getCameraInstance()//打开硬件摄像头，这里导包得时候一定要注意是android.hardware.Camera
         } else {
             ToastUtils.showToast(R.string.nonsupport_camera)
         }
-    }
-
-    /**
-     * 判断摄像头是否存在
-     *
-     * @param context
-     * @return
-     */
-    private fun checkCameraHardware(context: Context): Boolean {
-        return context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)
     }
 
     /**
@@ -90,12 +76,11 @@ class MainActivity : AppCompatActivity() {
      * @return Camera实例
      */
     fun getCameraInstance(): Camera? {
-
         var c: Camera? = null
         //android 6.0以后必须动态调用权限
         if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this@MainActivity as Activity,
-                    arrayOf(Manifest.permission.CAMERA),
+                    arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE),
                     3)
         } else {
             try {
@@ -117,12 +102,12 @@ class MainActivity : AppCompatActivity() {
         if (mCamera != null) {
             // 创建Preview view并将其设为activity中的内容
             mPreview = CameraPreview(this, mCamera)
-            preview!!.addView(mPreview, 0)
+            camera_preview!!.addView(mPreview, 0)
             mPreview!!.setOnClickListener {
                 mCamera!!.autoFocus(object : Camera.AutoFocusCallback {
                     override fun onAutoFocus(success: Boolean, camera: Camera) {
                         if (success) {
-                            println(">>>>>>>>success")
+                            doTakePhoto()
                         } else {
                             camera.autoFocus(this)//如果失败，自动聚焦
                         }
@@ -153,7 +138,7 @@ class MainActivity : AppCompatActivity() {
             mCamera = null
             if (mPreview != null) {
                 mPreview!!.holder.removeCallback(mPreview!!.getmCallback())
-                preview!!.removeView(mPreview)
+                camera_preview!!.removeView(mPreview)
             }
         }
     }
@@ -187,7 +172,7 @@ class MainActivity : AppCompatActivity() {
             camera.stopPreview()
             camera.startPreview()//处理完数据之后可以预览
             runOnIoThread {
-                val client = AipImageSearch("14795579", "MdOoOFdeptRjcAyvTP5L094i", "Ad4cnllYQGS3IRgZ2dLGIW5naeLtGGmc")
+                val client = AipImageSearch.getInstance()
                 val params = HashMap<String, String>()
                 params.put("tags", "1")
                 var resultJson = client.sameHqSearch(data, params)
@@ -207,26 +192,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * 未绑定页面时的数据初始化操作
-     */
-    private fun initdata() {
-        val window = window                    //得到窗口
-        requestWindowFeature(Window.FEATURE_NO_TITLE)              //请求没有标题
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, //设置全屏
-                WindowManager.LayoutParams.FLAG_FULLSCREEN)
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)    //设置高亮
-    }
-
-    /**
      * 绑定视图
      */
-    private fun bindViews() {
-        preview = findViewById(R.id.camera_preview)
-        img_photo = findViewById(R.id.img_photo)
+    private fun initView() {
+        img_doTakePhoto.setOnClickListener {
+            doTakePhoto()
+        }
     }
 
     //拍照
-    fun DoTakePhoto(view: View) {
+    fun doTakePhoto() {
         if (mCamera != null) {
             mCamera!!.takePicture(null, null, TakePictureCallback())
         } else {

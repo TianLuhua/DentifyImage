@@ -27,7 +27,21 @@ import java.util.HashMap;
 
 public class AipImageSearch extends BaseClient {
 
-    public AipImageSearch(String appId, String apiKey, String secretKey) {
+    private static AipImageSearch instance = null;
+
+    public static AipImageSearch getInstance() {
+
+        if (instance == null) {
+            synchronized (AipImageSearch.class) {
+                if (instance == null) {
+                    instance = new AipImageSearch("14795579", "MdOoOFdeptRjcAyvTP5L094i", "Ad4cnllYQGS3IRgZ2dLGIW5naeLtGGmc");
+                }
+            }
+        }
+        return instance;
+    }
+
+    private AipImageSearch(String appId, String apiKey, String secretKey) {
         super(appId, apiKey, secretKey);
     }
 

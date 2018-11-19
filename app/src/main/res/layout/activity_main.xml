@@ -7,11 +7,12 @@
     tools:context=".ui.MainActivity">
 
     <Button
+        android:id="@+id/img_doTakePhoto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:onClick="DoTakePhoto"
+        android:onClick="doTakePhoto"
         android:text="拍照" />
 
     <ImageView
