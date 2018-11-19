@@ -23,6 +23,7 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Toast
 import com.booyue.utils.ToastUtils
+import com.boyue.booyuedentifyimage.DentifyImageModel
 import com.boyue.booyuedentifyimage.R
 import com.boyue.booyuedentifyimage.api.imagesearch.AipImageSearch
 import com.boyue.booyuedentifyimage.bean.ResultResponseBean
@@ -44,6 +45,8 @@ class MainActivity : AppCompatActivity() {
     private var mPreview: CameraPreview? = null
     private var imgUri: Uri? = null              //图片URI
     private val which_camera = 0           //打开哪个摄像头
+    //默认为封面编号
+    private var classifyNumber = "1,1"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         //设备支持摄像头才创建实例
         if (application.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             mCamera = getCameraInstance()//打开硬件摄像头，这里导包得时候一定要注意是android.hardware.Camera
+            mCamera?.setDisplayOrientation(90)
         } else {
             ToastUtils.showToast(R.string.nonsupport_camera)
         }
@@ -172,21 +176,38 @@ class MainActivity : AppCompatActivity() {
             camera.stopPreview()
             camera.startPreview()//处理完数据之后可以预览
             runOnIoThread {
-                val client = AipImageSearch.getInstance()
+                val client = AipImageSearch("14795579", "MdOoOFdeptRjcAyvTP5L094i", "Ad4cnllYQGS3IRgZ2dLGIW5naeLtGGmc")
                 val params = HashMap<String, String>()
-                params.put("tags", "1")
+                params.put("tags", classifyNumber)
+                params.put("tag_logic", "0")
+                Log.e("classifyNumber", classifyNumber)
                 var resultJson = client.sameHqSearch(data, params)
                 Log.e("result", resultJson.toString())
                 val gson = Gson()
                 var resultsRespons = gson.fromJson(resultJson.toString(), ResultResponseBean::class.java)
                 val results = resultsRespons.result
-                val maxResult = results.maxBy {
+                val maxResult = results?.maxBy {
                     it.score
                 }
+                //根据封面的brief信息获取该书在图库中的分类信息
+                val brief = maxResult?.brief ?: null
+                if (brief != null) {
+                    //封面brief信息格式：书本描述，分类1编号，分类2编号。举个栗子：火火兔绘本，1，4
+                    val ss = brief.split(",")
+                    if (ss.size >= 2) {
+                        val classifyBuilder = StringBuilder()
+                        classifyBuilder.append(ss[ss.size - 2])
+                        classifyBuilder.append(",")
+                        classifyBuilder.append(ss[ss.size - 1])
+                        classifyNumber = classifyBuilder.toString()
+                        Log.e("classifyNumber", classifyNumber)
+                    }
+                }
                 runOnUiThread {
-                    ToastUtils.showLongToast(maxResult?.brief
+                    ToastUtils.showLongToast(brief
                             ?: getString(R.string.i_do_not_know_this_book))
                 }
+
             }
         }
     }

@@ -41,7 +41,7 @@ public class AipImageSearch extends BaseClient {
         return instance;
     }
 
-    private AipImageSearch(String appId, String apiKey, String secretKey) {
+    public AipImageSearch(String appId, String apiKey, String secretKey) {
         super(appId, apiKey, secretKey);
     }
 
