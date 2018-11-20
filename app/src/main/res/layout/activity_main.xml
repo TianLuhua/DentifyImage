@@ -30,7 +30,18 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_margin="20dp"
+        android:layout_margin="30dp"
+        android:text="@string/app_name"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/dentify_model"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="30sp"
+        android:layout_toEndOf="@+id/img_doTakePhoto"
         android:text="@string/app_name"
         android:textSize="20sp" />
 
