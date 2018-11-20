@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         val TAG = "MainActivity"
+        val REQUESTCODE = 0x00001
     }
 
     private var isPreview = false
@@ -49,6 +50,8 @@ class MainActivity : AppCompatActivity() {
     private var classifyNumber = "1,1"
     //默认识别模式：封面模式
     private var dentifyImageModel: DentifyImageModel = DentifyImageModel.COVER
+    //拍照回去数据的接口
+    private val mTakePictureCallback = TakePictureCallback()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,11 +61,48 @@ class MainActivity : AppCompatActivity() {
         init()
     }
 
-    private fun initanim() {
-        val animation = AnimationUtils.loadAnimation(applicationContext, R.anim.img_anim)
-        img_photo!!.startAnimation(animation)
+    override fun onResume() {
+        if (mCamera == null) {
+            init()
+        }
+        super.onResume()
     }
 
+    override fun onPause() {
+        closeCamera()
+        super.onPause()
+    }
+
+    /**
+     * 绑定视图
+     */
+    private fun initView() {
+        img_doTakePhoto.setOnClickListener {
+            doTakePhoto()
+        }
+        back_cover.setOnClickListener {
+            //设置成识别封面模式
+            classifyNumber = "1,1"
+            dentifyImageModel = DentifyImageModel.COVER
+            text_content.text = ""
+            getcurrentDentifuModel()
+        }
+        getcurrentDentifuModel()
+    }
+
+    /**
+     * 获取当前识别模式：封面/内容
+     */
+    private fun getcurrentDentifuModel() {
+        dentify_model.text = when (dentifyImageModel) {
+            DentifyImageModel.COVER -> {
+                "封面识别模式"
+            }
+            DentifyImageModel.CONTENT -> {
+                "内容识别模式"
+            }
+        }
+    }
 
     /**
      * 初始化摄像头参数
@@ -85,19 +125,36 @@ class MainActivity : AppCompatActivity() {
     fun getCameraInstance(): Camera? {
         var c: Camera? = null
         //android 6.0以后必须动态调用权限
-        if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this@MainActivity as Activity,
                     arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    3)
+                    REQUESTCODE)
         } else {
             try {
                 c = Camera.open(which_camera) // 试图获取Camera实例
             } catch (e: Exception) {
-                Log.e("sda", e.toString())
                 // 摄像头不可用（正被占用或不存在）
+                Log.e("sda", e.toString())
             }
         }
         return c // 不可用则返回null
+    }
+
+    /**
+     * 判断相机权限、读写内存卡权限
+     */
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if (requestCode == REQUESTCODE) {
+            val result = grantResults.filter {
+                it == PackageManager.PERMISSION_GRANTED
+            }.let {
+                if (it.size == 2) {
+                    init()
+                }
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     /**
@@ -126,18 +183,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        if (mCamera == null) {
-            init()
-        }
-        super.onResume()
-    }
-
-    override fun onPause() {
-        closeCamera()
-        super.onPause()
-    }
-
+    /**
+     * 关闭相机
+     */
     private fun closeCamera() {
         if (mCamera != null) {
             mCamera!!.stopPreview()
@@ -150,16 +198,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == 3) {
-            init()                 //获取权限后在去验证一次
-        } else if (requestCode == 4) {
-        }
-        super.onActivityResult(requestCode, resultCode, data)
-    }
-
-
+    /**
+     * 拍照数据回调
+     */
     private inner class TakePictureCallback : Camera.PictureCallback {
         override fun onPictureTaken(data: ByteArray, camera: Camera) {
             val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
@@ -218,38 +259,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 绑定视图
-     */
-    private fun initView() {
-        img_doTakePhoto.setOnClickListener {
-            doTakePhoto()
-        }
-        back_cover.setOnClickListener {
-            //设置成识别封面模式
-            classifyNumber = "1,1"
-            dentifyImageModel = DentifyImageModel.COVER
-            text_content.text=""
-            getcurrentDentifuModel()
-        }
-        getcurrentDentifuModel()
-    }
-
-    private fun getcurrentDentifuModel() {
-        dentify_model.text = when (dentifyImageModel) {
-            DentifyImageModel.COVER -> {
-                "封面识别模式"
-            }
-            DentifyImageModel.CONTENT -> {
-                "内容识别模式"
-            }
-        }
+    private fun initanim() {
+        val animation = AnimationUtils.loadAnimation(applicationContext, R.anim.img_anim)
+        img_photo!!.startAnimation(animation)
     }
 
     //拍照
     fun doTakePhoto() {
         if (mCamera != null) {
-            mCamera!!.takePicture(null, null, TakePictureCallback())
+            mCamera!!.takePicture(null, null, mTakePictureCallback)
         } else {
             ToastUtils.showToast("没有打开相机")
         }
@@ -269,6 +287,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * 摄像头预览
+     */
     internal inner class CameraPreview(context: Context, private val mCamera: Camera?) : SurfaceView(context), SurfaceHolder.Callback {
 
         private val mHolder: SurfaceHolder
@@ -292,6 +313,10 @@ class MainActivity : AppCompatActivity() {
         override fun surfaceCreated(surfaceHolder: SurfaceHolder) {
             try {
                 mCamera!!.setPreviewDisplay(mHolder)
+                mCamera.setPreviewCallback { data, camera ->
+
+
+                }
                 mCamera.startPreview()
                 isPreview = true       //开始预览
             } catch (e: IOException) {
