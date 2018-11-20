@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         //设备支持摄像头才创建实例
         if (application.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             mCamera = getCameraInstance()//打开硬件摄像头，这里导包得时候一定要注意是android.hardware.Camera
-            mCamera?.setDisplayOrientation(90)
+//            mCamera?.setDisplayOrientation(90)
         } else {
             ToastUtils.showToast(R.string.nonsupport_camera)
         }
@@ -205,6 +205,8 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     ToastUtils.showLongToast(brief
                             ?: getString(R.string.i_do_not_know_this_book))
+                    text_content.text = brief
+                            ?: getString(R.string.i_do_not_know_this_book)
                 }
 
             }
@@ -220,7 +222,7 @@ class MainActivity : AppCompatActivity() {
         }
         back_cover.setOnClickListener {
             //设置成识别封面模式
-            classifyNumber="1,1"
+            classifyNumber = "1,1"
         }
     }
 
