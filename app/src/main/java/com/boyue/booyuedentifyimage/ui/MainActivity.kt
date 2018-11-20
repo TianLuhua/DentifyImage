@@ -23,7 +23,6 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Toast
 import com.booyue.utils.ToastUtils
-import com.boyue.booyuedentifyimage.DentifyImageModel
 import com.boyue.booyuedentifyimage.R
 import com.boyue.booyuedentifyimage.api.imagesearch.AipImageSearch
 import com.boyue.booyuedentifyimage.bean.ResultResponseBean
@@ -176,7 +175,7 @@ class MainActivity : AppCompatActivity() {
             camera.stopPreview()
             camera.startPreview()//处理完数据之后可以预览
             runOnIoThread {
-                val client = AipImageSearch("14795579", "MdOoOFdeptRjcAyvTP5L094i", "Ad4cnllYQGS3IRgZ2dLGIW5naeLtGGmc")
+                val client = AipImageSearch.getInstance()
                 val params = HashMap<String, String>()
                 params.put("tags", classifyNumber)
                 params.put("tag_logic", "0")
@@ -218,6 +217,10 @@ class MainActivity : AppCompatActivity() {
     private fun initView() {
         img_doTakePhoto.setOnClickListener {
             doTakePhoto()
+        }
+        back_cover.setOnClickListener {
+            //设置成识别封面模式
+            classifyNumber="1,1"
         }
     }
 

@@ -12,8 +12,15 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:onClick="doTakePhoto"
         android:text="拍照" />
+
+    <Button
+        android:id="@+id/back_cover"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:text="回到封面扫描" />
 
     <ImageView
         android:id="@+id/img_photo"
