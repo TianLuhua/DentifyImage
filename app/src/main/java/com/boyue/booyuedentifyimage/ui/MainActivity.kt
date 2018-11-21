@@ -1,7 +1,6 @@
 package com.boyue.booyuedentifyimage.ui
 
 import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,11 +8,8 @@ import android.graphics.BitmapFactory
 import android.graphics.PixelFormat
 import android.hardware.Camera
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Environment
+import android.os.*
 import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.SurfaceHolder
@@ -25,8 +21,8 @@ import com.booyue.utils.ToastUtils
 import com.booyue.utils.Utils
 import com.boyue.booyuedentifyimage.DentifyImageModel
 import com.boyue.booyuedentifyimage.R
-import com.boyue.booyuedentifyimage.api.baidu.imagesearch.AipImageSearch
-import com.boyue.booyuedentifyimage.api.booyue.camera.VcCamera
+import com.boyue.booyuedentifyimage.api.imagesearch.AipImageSearch
+import com.boyue.booyuedentifyimage.api.camera.VcCamera
 import com.boyue.booyuedentifyimage.bean.ResultResponseBean
 import com.boyue.booyuedentifyimage.utils.runOnIoThread
 import com.google.gson.Gson
@@ -35,29 +31,93 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MainContract.View {
+
 
     companion object {
         val TAG = "MainActivity"
-
     }
 
-    private var isPreview = false
     private var mCamera: VcCamera? = null
     private var mPreview: CameraPreview? = null
     private var imgUri: Uri? = null              //图片URI
-    private val which_camera = 0           //打开哪个摄像头
     //默认为封面编号
     private var classifyNumber = "1,1"
     //默认识别模式：封面模式
     private var dentifyImageModel: DentifyImageModel = DentifyImageModel.COVER
-    //拍照回去数据的接口
-    private val mTakePictureCallback = TakePictureCallback()
     private val animation = AnimationUtils.loadAnimation(Utils.getApp(), R.anim.img_anim)
-
     private val PERMISSIONS_CAMERA = Manifest.permission.CAMERA
     private val PERMISSIONS_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE
     private val REQUESTCODE = 0x00001
+
+    //图片相似请求接口
+    val client = AipImageSearch.getInstance()
+    //图片相似请求接口参数
+    val params = HashMap<String, String>()
+
+    val handler = object : Handler() {
+        override fun handleMessage(msg: Message?) {
+
+
+        }
+    }
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        initView()
+        if (hasPermission()) {
+            init()
+        } else {
+            requestPermission()
+        }
+    }
+
+    override fun showLoading() {
+
+    }
+
+
+    override fun dismissLoading() {
+
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        closeCamera()
+    }
+
+    /**
+     * 绑定视图
+     */
+    private fun initView() {
+        getcurrentDentifuModel()
+        back_cover.setOnClickListener {
+            //设置成识别封面模式
+            classifyNumber = "1,1"
+            dentifyImageModel = DentifyImageModel.COVER
+            text_content.text = ""
+            getcurrentDentifuModel()
+        }
+    }
+
+    /**
+     * 初始化数据
+     */
+    private fun init() {
+        // 创建Camera实例
+        initCamera()
+        if (mCamera != null) {
+            // 创建Preview view并将其设为activity中的内容
+            mPreview = CameraPreview(this, mCamera)
+            camera_preview!!.addView(mPreview, 0)
+        } else {
+            Toast.makeText(this@MainActivity, "打开摄像头失败", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     /**
      * 检查Camera和读写SD卡权限
      */
@@ -93,47 +153,14 @@ class MainActivity : AppCompatActivity() {
             }.let {
                 if (it.size == 2) {
                     init()
+                } else {
+                    ToastUtils.showLongToast("请到设置界面赋予APP于Camera和读取内存卡的权限！")
                 }
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        initView()
-        init()
-    }
-
-    override fun onResume() {
-        if (mCamera == null) {
-            init()
-        }
-        super.onResume()
-    }
-
-    override fun onPause() {
-        closeCamera()
-        super.onPause()
-    }
-
-    /**
-     * 绑定视图
-     */
-    private fun initView() {
-        img_doTakePhoto.setOnClickListener {
-            doTakePhoto()
-        }
-        back_cover.setOnClickListener {
-            //设置成识别封面模式
-            classifyNumber = "1,1"
-            dentifyImageModel = DentifyImageModel.COVER
-            text_content.text = ""
-            getcurrentDentifuModel()
-        }
-        getcurrentDentifuModel()
-    }
 
     /**
      * 获取当前识别模式：封面/内容
@@ -158,50 +185,9 @@ class MainActivity : AppCompatActivity() {
             mCamera = VcCamera(this@MainActivity)//打开硬件摄像头，这里导包得时候一定要注意是android.hardware.Camera
             mCamera!!.setVcPreviewCallback { data, angle, SPF, isFront ->
                 Log.e(TAG, "VcPreviewCallback")
-
             }
-//            mCamera?.setDisplayOrientation(90)
         } else {
             ToastUtils.showToast(R.string.nonsupport_camera)
-        }
-    }
-
-    /**
-     * 获取Camera实例
-     *
-     * @return Camera实例
-     */
-    fun getCameraInstance(): Camera? {
-        var c: Camera? = null
-        //android 6.0以后必须动态调用权限
-        if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this@MainActivity as Activity,
-                    arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    REQUESTCODE)
-        } else {
-            try {
-                c = Camera.open(which_camera) // 试图获取Camera实例
-            } catch (e: Exception) {
-                // 摄像头不可用（正被占用或不存在）
-                Log.e("sda", e.toString())
-            }
-        }
-        return c // 不可用则返回null
-    }
-
-    /**
-     * 初始化数据
-     */
-    private fun init() {
-        // 创建Camera实例
-        initCamera()
-        if (mCamera != null) {
-            // 创建Preview view并将其设为activity中的内容
-            mPreview = CameraPreview(this, mCamera)
-            camera_preview!!.addView(mPreview, 0)
-        } else {
-            Toast.makeText(this@MainActivity, "打开摄像头失败", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -241,8 +227,6 @@ class MainActivity : AppCompatActivity() {
             camera.stopPreview()
             camera.startPreview()//处理完数据之后可以预览
             runOnIoThread {
-                val client = AipImageSearch.getInstance()
-                val params = HashMap<String, String>()
                 params.put("tags", classifyNumber)
                 params.put("tag_logic", "0")
                 Log.e("classifyNumber", classifyNumber)
@@ -280,21 +264,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    //拍照
-    fun doTakePhoto() {
-        if (mCamera != null) {
-        } else {
-        }
-    }
-
     /**
      * 摄像头预览
      */
-    internal inner class CameraPreview(context: Context, private val mCamera: VcCamera?) : SurfaceView(context), SurfaceHolder.Callback {
+    inner class CameraPreview(context: Context, private val mCamera: VcCamera?) : SurfaceView(context), SurfaceHolder.Callback {
 
-        private val mHolder: SurfaceHolder
         private val TAG = "CameraPreview"
+        private val mHolder: SurfaceHolder
         private val mCallback: SurfaceHolder.Callback
 
         init {
@@ -314,7 +290,6 @@ class MainActivity : AppCompatActivity() {
         override fun surfaceCreated(surfaceHolder: SurfaceHolder) {
             try {
                 mCamera?.openCamera(surfaceHolder)
-                isPreview = true       //开始预览
             } catch (e: IOException) {
                 Log.d(TAG, "Error setting camera preview: " + e.message)
             }
@@ -342,15 +317,11 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Log.d(TAG, "Error starting camera preview: " + e.message)
             }
-
         }
 
         override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) {
             if (mCamera != null) {
-                if (isPreview) {            //如果正在预览
-                    mCamera.closeCamera()   //停止预览
-                    isPreview = false
-                }
+                mCamera.closeCamera()   //停止预览
             }
         }
     }
