@@ -10,10 +10,10 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.boyue.booyuedentifyimage.api.util;
+package com.boyue.booyuedentifyimage.api.baidu.util;
 
 
-import com.boyue.booyuedentifyimage.api.exception.AipException;
+import com.boyue.booyuedentifyimage.api.baidu.exception.AipException;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;

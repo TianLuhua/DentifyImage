@@ -11,7 +11,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.boyue.booyuedentifyimage.api.imagesearch;
+package com.boyue.booyuedentifyimage.api.baidu.imagesearch;
 
 public class ImageSearchConsts {
 

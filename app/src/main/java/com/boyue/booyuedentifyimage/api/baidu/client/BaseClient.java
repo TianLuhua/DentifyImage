@@ -10,24 +10,24 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.boyue.booyuedentifyimage.api.client;
+package com.boyue.booyuedentifyimage.api.baidu.client;
 
 
 import android.util.Log;
 
-import com.boyue.booyuedentifyimage.api.auth.CloudAuth;
-import com.boyue.booyuedentifyimage.api.auth.DevAuth;
-import com.boyue.booyuedentifyimage.api.error.AipError;
-import com.boyue.booyuedentifyimage.api.http.AipHttpClient;
-import com.boyue.booyuedentifyimage.api.http.AipRequest;
-import com.boyue.booyuedentifyimage.api.http.AipResponse;
-import com.boyue.booyuedentifyimage.api.http.Headers;
-import com.boyue.booyuedentifyimage.api.http.HttpContentType;
-import com.boyue.booyuedentifyimage.api.http.HttpMethodName;
-import com.boyue.booyuedentifyimage.api.util.AipClientConfiguration;
-import com.boyue.booyuedentifyimage.api.util.AipClientConst;
-import com.boyue.booyuedentifyimage.api.util.SignUtil;
-import com.boyue.booyuedentifyimage.api.util.Util;
+import com.boyue.booyuedentifyimage.api.baidu.auth.CloudAuth;
+import com.boyue.booyuedentifyimage.api.baidu.auth.DevAuth;
+import com.boyue.booyuedentifyimage.api.baidu.error.AipError;
+import com.boyue.booyuedentifyimage.api.baidu.http.AipHttpClient;
+import com.boyue.booyuedentifyimage.api.baidu.http.AipRequest;
+import com.boyue.booyuedentifyimage.api.baidu.http.AipResponse;
+import com.boyue.booyuedentifyimage.api.baidu.http.Headers;
+import com.boyue.booyuedentifyimage.api.baidu.http.HttpContentType;
+import com.boyue.booyuedentifyimage.api.baidu.http.HttpMethodName;
+import com.boyue.booyuedentifyimage.api.baidu.util.AipClientConfiguration;
+import com.boyue.booyuedentifyimage.api.baidu.util.AipClientConst;
+import com.boyue.booyuedentifyimage.api.baidu.util.SignUtil;
+import com.boyue.booyuedentifyimage.api.baidu.util.Util;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;

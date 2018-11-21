@@ -10,11 +10,10 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.boyue.booyuedentifyimage.api.http;
+package com.boyue.booyuedentifyimage.api.baidu.http;
 
-public interface HttpContentType {
-
-    public static final String FORM_DATA = "multipart/form-data";
-    public static final String JSON_DATA = "application/json";
-    public static final String FORM_URLENCODE_DATA = "application/x-www-form-urlencoded";
+public class HttpCharacterEncoding {
+    public static final String DEFAULT_ENCODING = "UTF8";
+    public static final String ENCODE_UTF8 = "UTF8";
+    public static final String ENCODE_GBK = "GBK";
 }

@@ -10,15 +10,15 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.boyue.booyuedentifyimage.api.auth;
+package com.boyue.booyuedentifyimage.api.baidu.auth;
 
 
-import com.boyue.booyuedentifyimage.api.http.AipHttpClient;
-import com.boyue.booyuedentifyimage.api.http.AipRequest;
-import com.boyue.booyuedentifyimage.api.http.AipResponse;
-import com.boyue.booyuedentifyimage.api.util.AipClientConfiguration;
-import com.boyue.booyuedentifyimage.api.util.AipClientConst;
-import com.boyue.booyuedentifyimage.api.util.Util;
+import com.boyue.booyuedentifyimage.api.baidu.http.AipHttpClient;
+import com.boyue.booyuedentifyimage.api.baidu.http.AipRequest;
+import com.boyue.booyuedentifyimage.api.baidu.http.AipResponse;
+import com.boyue.booyuedentifyimage.api.baidu.util.AipClientConfiguration;
+import com.boyue.booyuedentifyimage.api.baidu.util.AipClientConst;
+import com.boyue.booyuedentifyimage.api.baidu.util.Util;
 
 import org.json.JSONException;
 import org.json.JSONObject;

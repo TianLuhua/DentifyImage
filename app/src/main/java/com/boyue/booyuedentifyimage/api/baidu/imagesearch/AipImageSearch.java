@@ -11,14 +11,14 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.boyue.booyuedentifyimage.api.imagesearch;
+package com.boyue.booyuedentifyimage.api.baidu.imagesearch;
 
 
-import com.boyue.booyuedentifyimage.api.client.BaseClient;
-import com.boyue.booyuedentifyimage.api.error.AipError;
-import com.boyue.booyuedentifyimage.api.http.AipRequest;
-import com.boyue.booyuedentifyimage.api.util.Base64Util;
-import com.boyue.booyuedentifyimage.api.util.Util;
+import com.boyue.booyuedentifyimage.api.baidu.client.BaseClient;
+import com.boyue.booyuedentifyimage.api.baidu.error.AipError;
+import com.boyue.booyuedentifyimage.api.baidu.http.AipRequest;
+import com.boyue.booyuedentifyimage.api.baidu.util.Base64Util;
+import com.boyue.booyuedentifyimage.api.baidu.util.Util;
 
 import org.json.JSONObject;
 
