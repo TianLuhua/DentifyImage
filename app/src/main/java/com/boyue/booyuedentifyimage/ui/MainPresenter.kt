@@ -43,7 +43,7 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
 
     private var mContext: Context? = null
     //请求接口标志位
-    private var attachData = true
+    private var attachData = false
     //图片相似请求接口
     private val client = AipImageSearch.getInstance()
     //图片相似请求接口参数
@@ -71,6 +71,7 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
 
     override fun initPresenter() {
         checkViewAttached()
+        attachData=true
         mRootView?.currentDentifuModel(dentifyImageModel)
         handler.removeMessages(CAMERA_MSG_POSTVIEW_FRAME)
         handler.sendEmptyMessageDelayed(CAMERA_MSG_POSTVIEW_FRAME, CAMERA_MSG_POSTVIEW_FRAME_DELAY_TIME)

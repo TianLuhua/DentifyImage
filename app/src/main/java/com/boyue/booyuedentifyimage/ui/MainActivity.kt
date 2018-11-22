@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         if (application.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             mCamera = VcCamera(this@MainActivity)//打开硬件摄像头，这里导包得时候一定要注意是android.hardware.Camera
             mCamera!!.setVcPreviewCallback { data, c ->
-                Log.e(TAG, "setVcPreviewCallback")
+//                Log.e(TAG, "setVcPreviewCallback")
                 mainPresenter.checkViewAttached()
                 mainPresenter.onPreviewData(data, c)
             }
