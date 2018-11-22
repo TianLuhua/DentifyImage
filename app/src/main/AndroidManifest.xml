@@ -28,7 +28,12 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".service.VideoService" />
+        <service android:name=".service.VideoService">
+            <intent-filter>
+                <action android:name="com.booyue.service.videoservice" />
+            </intent-filter>
+
+        </service>
 
     </application>
 

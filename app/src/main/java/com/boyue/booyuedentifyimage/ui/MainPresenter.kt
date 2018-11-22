@@ -2,6 +2,7 @@ package com.boyue.booyuedentifyimage.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
 import android.graphics.Rect
@@ -20,6 +21,7 @@ import java.io.ByteArrayOutputStream
 import java.util.*
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
+import com.boyue.booyuedentifyimage.service.VideoService
 
 
 /**
@@ -71,7 +73,7 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
 
     override fun initPresenter() {
         checkViewAttached()
-        attachData=true
+        attachData = true
         mRootView?.currentDentifuModel(dentifyImageModel)
         handler.removeMessages(CAMERA_MSG_POSTVIEW_FRAME)
         handler.sendEmptyMessageDelayed(CAMERA_MSG_POSTVIEW_FRAME, CAMERA_MSG_POSTVIEW_FRAME_DELAY_TIME)
@@ -135,10 +137,12 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
         //根据封面的brief信息获取该书在图库中的分类信息
         val brief = maxResult?.brief ?: null
         if (brief != null) {
+            //识别了：可能是封面，可能是内容
             dentifyImageModel = DentifyImageModel.COVER
             val ss = brief.split(",")
             //封面brief信息格式：书本描述，分类1编号，分类2编号。举个栗子：火火兔绘本，1，4
             if (ss.size >= 2) {
+                //内容
                 val classifyBuilder = StringBuilder()
                 classifyBuilder.append(ss[ss.size - 2])
                 classifyBuilder.append(",")
@@ -148,11 +152,22 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
                 dentifyImageModel = DentifyImageModel.CONTENT
                 mRootView?.currentDentifuModel(dentifyImageModel)
                 Log.e("classifyNumber", classifyNumber)
+                startPlayAudio(VideoService.CONTENT)
+                return
             }
+            //封面
+            startPlayAudio(VideoService.COVER)
+
+        } else {
+            //没有识别
+            startPlayAudio(VideoService.COMMON)
         }
-
         mRootView!!.updateUI(brief ?: "我不认识这本书！")
-
     }
 
+    private fun startPlayAudio(position: Int) {
+        val intent = Intent(VideoService.STARTACTION)
+        intent.putExtra(VideoService.AUDIO_KEY, position)
+        mContext?.startService(intent)
+    }
 }
