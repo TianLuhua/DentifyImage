@@ -33,6 +33,7 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
         //封面的分类在百度云库中的默认分类
         val COVER_MODEL = "1,1"
         private val CAMERA_MSG_POSTVIEW_FRAME = 0x040
+        private val CAMERA_MSG_POSTVIEW_FRAME_DELAY_TIME = 8000.toLong()
     }
 
     constructor(mContext: Context) : this() {
@@ -61,7 +62,7 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
                 CAMERA_MSG_POSTVIEW_FRAME -> {
                     attachData = true
                     removeMessages(CAMERA_MSG_POSTVIEW_FRAME)
-                    sendEmptyMessageDelayed(CAMERA_MSG_POSTVIEW_FRAME, 3000)
+                    sendEmptyMessageDelayed(CAMERA_MSG_POSTVIEW_FRAME, CAMERA_MSG_POSTVIEW_FRAME_DELAY_TIME)
                 }
             }
 
@@ -72,7 +73,7 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
         checkViewAttached()
         mRootView?.currentDentifuModel(dentifyImageModel)
         handler.removeMessages(CAMERA_MSG_POSTVIEW_FRAME)
-        handler.sendEmptyMessageDelayed(CAMERA_MSG_POSTVIEW_FRAME, 3000)
+        handler.sendEmptyMessageDelayed(CAMERA_MSG_POSTVIEW_FRAME, CAMERA_MSG_POSTVIEW_FRAME_DELAY_TIME)
     }
 
 
