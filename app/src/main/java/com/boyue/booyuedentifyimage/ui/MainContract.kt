@@ -1,5 +1,7 @@
 package com.boyue.booyuedentifyimage.ui
 
+import android.graphics.Bitmap
+import android.hardware.Camera
 import com.boyue.booyuedentifyimage.base.IBaseView
 import com.boyue.booyuedentifyimage.base.IPresenter
 
@@ -8,10 +10,17 @@ import com.boyue.booyuedentifyimage.base.IPresenter
  */
 class MainContract {
     interface View : IBaseView {
+        fun setBitmap(bitmap: Bitmap?)
 
     }
 
     interface Presenter : IPresenter<View> {
+        /**
+         * 摄像头数据实时回调
+         */
+        fun onPreviewData(data: ByteArray, mCamera: Camera)
+
+        fun reset()
 
     }
 

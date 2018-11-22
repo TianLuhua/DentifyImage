@@ -28,7 +28,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".ui.model.VideoService" />
+        <service android:name=".service.VideoService" />
 
     </application>
 

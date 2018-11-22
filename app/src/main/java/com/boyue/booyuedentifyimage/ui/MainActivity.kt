@@ -44,28 +44,23 @@ class MainActivity : AppCompatActivity(), MainContract.View {
     //默认为封面编号
     private var classifyNumber = "1,1"
     //默认识别模式：封面模式
-    private var dentifyImageModel: DentifyImageModel = DentifyImageModel.COVER
+
     private val animation = AnimationUtils.loadAnimation(Utils.getApp(), R.anim.img_anim)
     private val PERMISSIONS_CAMERA = Manifest.permission.CAMERA
     private val PERMISSIONS_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE
     private val REQUESTCODE = 0x00001
-
     //图片相似请求接口
     val client = AipImageSearch.getInstance()
     //图片相似请求接口参数
     val params = HashMap<String, String>()
-
-    val handler = object : Handler() {
-        override fun handleMessage(msg: Message?) {
-
-
-        }
+    private val mainPresenter by lazy {
+        MainPresenter()
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        mainPresenter.attachView(this)
         initView()
         if (hasPermission()) {
             init()
@@ -74,19 +69,30 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         }
     }
 
-    override fun showLoading() {
-
+    override fun onResume() {
+        super.onResume()
+        init()
     }
 
 
-    override fun dismissLoading() {
-
+    override fun onPause() {
+        super.onPause()
+        closeCamera()
     }
-
 
     override fun onDestroy() {
         super.onDestroy()
         closeCamera()
+        mainPresenter.detachView()
+    }
+
+    override fun showLoading() {
+        Log.e(TAG, "showLoading()")
+    }
+
+
+    override fun dismissLoading() {
+        Log.e(TAG, "dismissLoading()")
     }
 
     /**
@@ -97,9 +103,12 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         back_cover.setOnClickListener {
             //设置成识别封面模式
             classifyNumber = "1,1"
-            dentifyImageModel = DentifyImageModel.COVER
             text_content.text = ""
             getcurrentDentifuModel()
+        }
+        img_doTakePhoto.setOnClickListener {
+//            mainPresenter.reset()
+//            mCamera?.takePticture()
         }
     }
 
@@ -166,14 +175,14 @@ class MainActivity : AppCompatActivity(), MainContract.View {
      * 获取当前识别模式：封面/内容
      */
     private fun getcurrentDentifuModel() {
-        dentify_model.text = when (dentifyImageModel) {
-            DentifyImageModel.COVER -> {
-                "封面识别模式"
-            }
-            DentifyImageModel.CONTENT -> {
-                "内容识别模式"
-            }
-        }
+//        dentify_model.text = when (dentifyImageModel) {
+//            DentifyImageModel.COVER -> {
+//                "封面识别模式"
+//            }
+//            DentifyImageModel.CONTENT -> {
+//                "内容识别模式"
+//            }
+//        }
     }
 
     /**
@@ -183,8 +192,10 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         //设备支持摄像头才创建实例
         if (application.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             mCamera = VcCamera(this@MainActivity)//打开硬件摄像头，这里导包得时候一定要注意是android.hardware.Camera
-            mCamera!!.setVcPreviewCallback { data, angle, SPF, isFront ->
-                Log.e(TAG, "VcPreviewCallback")
+            mCamera!!.setVcPreviewCallback { data ,c->
+                Log.e(TAG, "setVcPreviewCallback")
+                mainPresenter.checkViewAttached()
+                mainPresenter.onPreviewData(data,c)
             }
         } else {
             ToastUtils.showToast(R.string.nonsupport_camera)
@@ -199,11 +210,25 @@ class MainActivity : AppCompatActivity(), MainContract.View {
             mCamera!!.closeCamera()
             mCamera = null
             if (mPreview != null) {
-                mPreview!!.holder.removeCallback(mPreview!!.getmCallback())
                 camera_preview!!.removeView(mPreview)
             }
         }
     }
+
+    override fun setBitmap(bitmap: Bitmap?) {
+        runOnUiThread {
+            if(bitmap!=null){
+                Log.e(TAG,"setBitmap")
+                img_photo.visibility = View.VISIBLE
+                img_photo.setImageBitmap(bitmap)
+                img_photo.startAnimation(animation)
+            }else{
+                Log.e(TAG,"setBitmap bitmap is null")
+            }
+        }
+
+    }
+
 
     /**
      * 拍照数据回调
@@ -249,7 +274,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
                         classifyBuilder.append(",")
                         classifyBuilder.append(ss[ss.size - 1])
                         classifyNumber = classifyBuilder.toString()
-                        dentifyImageModel = DentifyImageModel.CONTENT
+//                        dentifyImageModel = DentifyImageModel.CONTENT
                         Log.e("classifyNumber", classifyNumber)
                     }
                 }
@@ -283,10 +308,6 @@ class MainActivity : AppCompatActivity(), MainContract.View {
             setZOrderMediaOverlay(true)
         }
 
-        fun getmCallback(): SurfaceHolder.Callback {
-            return this.mCallback
-        }
-
         override fun surfaceCreated(surfaceHolder: SurfaceHolder) {
             try {
                 mCamera?.openCamera(surfaceHolder)
@@ -299,7 +320,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         override fun surfaceChanged(surfaceHolder: SurfaceHolder, i: Int, i1: Int, i2: Int) {
             // 如果预览无法更改或旋转，注意此处的事件
             // 确保在缩放或重排时停止预览
-            if (mHolder.surface == null) {
+            if (surfaceHolder.surface == null) {
                 // 预览surface不存在
                 return
             }
@@ -313,16 +334,19 @@ class MainActivity : AppCompatActivity(), MainContract.View {
             // 在此进行缩放、旋转和重新组织格式
             // 以新的设置启动预览
             try {
-                mCamera!!.openCamera(mHolder)
+                mCamera!!.openCamera(surfaceHolder)
             } catch (e: Exception) {
                 Log.d(TAG, "Error starting camera preview: " + e.message)
             }
         }
 
         override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) {
+            //停止预览
             if (mCamera != null) {
-                mCamera.closeCamera()   //停止预览
+                mCamera.closeCamera()
             }
+            //移除回调
+            surfaceHolder.removeCallback(this)
         }
     }
 }

@@ -14,6 +14,8 @@
 package com.boyue.booyuedentifyimage.api.imagesearch;
 
 
+import android.util.Log;
+
 import com.boyue.booyuedentifyimage.api.client.BaseClient;
 import com.boyue.booyuedentifyimage.api.error.AipError;
 import com.boyue.booyuedentifyimage.api.http.AipRequest;
@@ -26,6 +28,8 @@ import java.io.IOException;
 import java.util.HashMap;
 
 public class AipImageSearch extends BaseClient {
+
+    public final String TAG = "AipImageSearch";
 
     private static AipImageSearch instance = null;
 
@@ -133,6 +137,7 @@ public class AipImageSearch extends BaseClient {
         preOperation(request);
 
         String base64Content = Base64Util.encode(image);
+        Log.e(TAG,"base64Content:"+base64Content);
         request.addBody("image", base64Content);
         if (options != null) {
             request.addBody(options);

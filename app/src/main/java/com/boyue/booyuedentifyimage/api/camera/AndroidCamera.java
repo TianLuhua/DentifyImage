@@ -956,6 +956,10 @@ public class AndroidCamera {
     protected PreviewCallback cameraCallback = new PreviewCallback() {
         @TargetApi(Build.VERSION_CODES.FROYO)
         public void onPreviewFrame(byte[] data, Camera arg1) {
+            if (mCallback != null) {
+                mCallback.onPreviewData(data,arg1);
+            }
+
             if (nInFPS > 0) {
                 int degree = 0;
                 if (fitSdkVersion()) {
@@ -1068,9 +1072,9 @@ public class AndroidCamera {
                 degree %= 360;
                 degree /= 90;
 
-                if (mCallback != null) {
-                    mCallback.onPreviewData(data, degree, nInFPS, CUR_CAMERA == FRONT_CAMERA);
-                }
+//                if (mCallback != null) {
+//                    mCallback.onPreviewData(data, degree, nInFPS, CUR_CAMERA == FRONT_CAMERA);
+//                }
             }
         }
     };
@@ -1124,7 +1128,7 @@ public class AndroidCamera {
     VcPreviewCallback mCallback = null;
 
     public interface VcPreviewCallback {
-        void onPreviewData(byte[] data, int angle, long SPF, boolean isFront);
+        void onPreviewData(byte[] data,Camera mCamera);
     }
 
     public void setVcPreviewCallback(VcPreviewCallback callback) {

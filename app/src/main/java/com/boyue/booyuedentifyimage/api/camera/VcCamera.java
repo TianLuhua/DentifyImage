@@ -563,11 +563,31 @@ public class VcCamera extends AndroidCamera {
     long mTotalFrames = 0;
     long mTotalBytes = 0;
 
+    public void takePticture() {
+        if (camera != null) {
+            camera.takePicture(null, null, pictureCallback);
+        }
+
+
+    }
+
+    private Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
+            if (mCallback != null) {
+                Log.e(TAG, "onPictureTaken");
+                mCallback.onPreviewData(data, camera);
+            }
+        }
+    };
+
     private PreviewCallback cameraCallback = new PreviewCallback() {
         @Override
         @TargetApi(Build.VERSION_CODES.FROYO)
         public void onPreviewFrame(byte[] data, Camera arg1) {
-
+            if (mCallback != null) {
+                mCallback.onPreviewData(data, arg1);
+            }
             if (nInFPS > 0) {
                 int degree = 0;
                 if (fitSdkVersion()) {
@@ -692,9 +712,9 @@ public class VcCamera extends AndroidCamera {
 //                if (mVideoCtrl != null) {
 //                    mVideoCtrl.OnPreviewData(data, degree, nInFPS, CUR_CAMERA == FRONT_CAMERA);
 //                }
-                if (mCallback != null) {
-                    mCallback.onPreviewData(data, degree, nInFPS, CUR_CAMERA == FRONT_CAMERA);
-                }
+//                if (mCallback != null) {
+//                    mCallback.onPreviewData(data, degree, nInFPS, CUR_CAMERA == FRONT_CAMERA);
+//                }
 
                 if (mStartTime == 0) {
                     mStartTime = System.currentTimeMillis();

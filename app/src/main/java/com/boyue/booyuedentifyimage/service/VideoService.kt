@@ -1,4 +1,4 @@
-package com.boyue.booyuedentifyimage.ui.model
+package com.boyue.booyuedentifyimage.service
 
 import android.app.Service
 import android.content.Intent
@@ -8,15 +8,17 @@ import com.boyue.booyuedentifyimage.base.IBaseModel
 /**
  * Created by Tianluhua on 2018\11\21 0021.
  */
-class VideoService : Service(), IBaseModel {
+class VideoService : Service() {
 
 
     override fun onBind(intent: Intent?): IBinder? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return null
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-    override fun onModelDestroy() {
 
+        return Service.START_STICKY
     }
+
 }
