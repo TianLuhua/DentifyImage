@@ -4,11 +4,9 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.PixelFormat
-import android.hardware.Camera
-import android.net.Uri
-import android.os.*
+import android.os.Build
+import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -21,18 +19,11 @@ import com.booyue.utils.ToastUtils
 import com.booyue.utils.Utils
 import com.boyue.booyuedentifyimage.DentifyImageModel
 import com.boyue.booyuedentifyimage.R
-import com.boyue.booyuedentifyimage.api.imagesearch.AipImageSearch
 import com.boyue.booyuedentifyimage.api.camera.VcCamera
-import com.boyue.booyuedentifyimage.bean.ResultResponseBean
-import com.boyue.booyuedentifyimage.utils.runOnIoThread
-import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
-import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 
 class MainActivity : AppCompatActivity(), MainContract.View {
-
 
     companion object {
         val TAG = "MainActivity"
@@ -40,21 +31,13 @@ class MainActivity : AppCompatActivity(), MainContract.View {
 
     private var mCamera: VcCamera? = null
     private var mPreview: CameraPreview? = null
-    private var imgUri: Uri? = null              //图片URI
-    //默认为封面编号
-    private var classifyNumber = "1,1"
-    //默认识别模式：封面模式
-
     private val animation = AnimationUtils.loadAnimation(Utils.getApp(), R.anim.img_anim)
     private val PERMISSIONS_CAMERA = Manifest.permission.CAMERA
     private val PERMISSIONS_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE
     private val REQUESTCODE = 0x00001
-    //图片相似请求接口
-    val client = AipImageSearch.getInstance()
-    //图片相似请求接口参数
-    val params = HashMap<String, String>()
+
     private val mainPresenter by lazy {
-        MainPresenter()
+        MainPresenter(applicationContext)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,6 +54,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
 
     override fun onResume() {
         super.onResume()
+        mainPresenter.initPresenter()
         init()
     }
 
@@ -99,16 +83,9 @@ class MainActivity : AppCompatActivity(), MainContract.View {
      * 绑定视图
      */
     private fun initView() {
-        getcurrentDentifuModel()
         back_cover.setOnClickListener {
             //设置成识别封面模式
-            classifyNumber = "1,1"
-            text_content.text = ""
-            getcurrentDentifuModel()
-        }
-        img_doTakePhoto.setOnClickListener {
-//            mainPresenter.reset()
-//            mCamera?.takePticture()
+            mainPresenter.reset()
         }
     }
 
@@ -170,21 +147,6 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-
-    /**
-     * 获取当前识别模式：封面/内容
-     */
-    private fun getcurrentDentifuModel() {
-//        dentify_model.text = when (dentifyImageModel) {
-//            DentifyImageModel.COVER -> {
-//                "封面识别模式"
-//            }
-//            DentifyImageModel.CONTENT -> {
-//                "内容识别模式"
-//            }
-//        }
-    }
-
     /**
      * 初始化摄像头参数
      */
@@ -192,10 +154,10 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         //设备支持摄像头才创建实例
         if (application.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             mCamera = VcCamera(this@MainActivity)//打开硬件摄像头，这里导包得时候一定要注意是android.hardware.Camera
-            mCamera!!.setVcPreviewCallback { data ,c->
+            mCamera!!.setVcPreviewCallback { data, c ->
                 Log.e(TAG, "setVcPreviewCallback")
                 mainPresenter.checkViewAttached()
-                mainPresenter.onPreviewData(data,c)
+                mainPresenter.onPreviewData(data, c)
             }
         } else {
             ToastUtils.showToast(R.string.nonsupport_camera)
@@ -215,77 +177,42 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         }
     }
 
+
+    /**
+     * 当前处于什么识别模式：封面/内容
+     */
+    override fun currentDentifuModel(dentifyImageModel: DentifyImageModel) {
+        runOnUiThread {
+            dentify_model.text = when (dentifyImageModel) {
+                DentifyImageModel.COVER -> "封面识别模式"
+                DentifyImageModel.CONTENT -> "内容识别模式"
+            }
+        }
+    }
+
+    /**
+     * 设置当前的预览图
+     */
     override fun setBitmap(bitmap: Bitmap?) {
         runOnUiThread {
-            if(bitmap!=null){
-                Log.e(TAG,"setBitmap")
+            if (bitmap != null) {
+                Log.e(TAG, "setBitmap")
                 img_photo.visibility = View.VISIBLE
                 img_photo.setImageBitmap(bitmap)
                 img_photo.startAnimation(animation)
-            }else{
-                Log.e(TAG,"setBitmap bitmap is null")
+            } else {
+                Log.e(TAG, "setBitmap bitmap is null")
             }
         }
 
     }
 
-
     /**
-     * 拍照数据回调
+     * 跟新当前的内容：封面内容 or 具体内容
      */
-    private inner class TakePictureCallback : Camera.PictureCallback {
-        override fun onPictureTaken(data: ByteArray, camera: Camera) {
-            val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
-            img_photo.visibility = View.VISIBLE
-            img_photo.setImageBitmap(bitmap)
-            img_photo.startAnimation(animation)
-            val filePar = File(Environment.getExternalStorageDirectory().toString() + "/videoappimg")
-            //如果不存在这个文件夹就去创建
-            if (!filePar.exists()) {
-                filePar.mkdirs()
-            }
-            val file = File(Environment.getExternalStorageDirectory(), "/videoappimg/" + "videoapp_" + System.currentTimeMillis() + ".jpg")
-            val outputStream = FileOutputStream(file)
-            imgUri = Uri.fromFile(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-            outputStream.close()
-            camera.stopPreview()
-            camera.startPreview()//处理完数据之后可以预览
-            runOnIoThread {
-                params.put("tags", classifyNumber)
-                params.put("tag_logic", "0")
-                Log.e("classifyNumber", classifyNumber)
-                var resultJson = client.sameHqSearch(data, params)
-                Log.e("result", resultJson.toString())
-                val gson = Gson()
-                var resultsRespons = gson.fromJson(resultJson.toString(), ResultResponseBean::class.java)
-                val results = resultsRespons.result
-                val maxResult = results?.maxBy {
-                    it.score
-                }
-                //根据封面的brief信息获取该书在图库中的分类信息
-                val brief = maxResult?.brief ?: null
-                if (brief != null) {
-                    val ss = brief.split(",")
-                    //封面brief信息格式：书本描述，分类1编号，分类2编号。举个栗子：火火兔绘本，1，4
-                    if (ss.size >= 2) {
-                        val classifyBuilder = StringBuilder()
-                        classifyBuilder.append(ss[ss.size - 2])
-                        classifyBuilder.append(",")
-                        classifyBuilder.append(ss[ss.size - 1])
-                        classifyNumber = classifyBuilder.toString()
-//                        dentifyImageModel = DentifyImageModel.CONTENT
-                        Log.e("classifyNumber", classifyNumber)
-                    }
-                }
-                runOnUiThread {
-                    getcurrentDentifuModel()
-                    val text = brief ?: getString(R.string.i_do_not_know_this_book)
-                    ToastUtils.showLongToast(text)
-                    text_content.text = text
-                }
-
-            }
+    override fun updateUI(msg: String) {
+        runOnUiThread {
+            text_content.text = msg
         }
     }
 
