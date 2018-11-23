@@ -133,7 +133,6 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
 
         params.put("tags", classifyNumber)
         params.put("tag_logic", "0")
-        Log.e("classifyNumber", classifyNumber)
         var resultJson = client.sameHqSearch(data, params)
         Log.e("result", resultJson.toString())
         val gson = Gson()
@@ -176,16 +175,20 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
                     append("页")
                     this.toString()
                 }
-                if (ss[1] == "list") {
-                    startPlayAudio(VideoService.LIST)
+                if (ss[1] == "list1") {
+                    startPlayAudio(VideoService.LIST1)
+                } else if (ss[1] == "list2") {
+                    startPlayAudio(VideoService.LIST2)
                 } else if (ss[1] == "brief") {
                     startPlayAudio(VideoService.BRIEF)
+                } else if (ss[1] == "authentication") {
+                    startPlayAudio(VideoService.AUTHENTICATION)
                 } else {
+                    //如果上传至图库的图片 brief 第二个分号后填写的不是数字的话，这里将抛异常
                     startPlayAudio(numberOfcontent.toInt())
                 }
                 mRootView!!.updateUI(brief)
                 Log.e(TAG, "content:" + numberOfcontent)
-
                 return
             } else {
                 Log.e(TAG, "注意  注意  注意 ！！" + brief)
@@ -208,7 +211,7 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
      * 播放对应绘本的音频
      */
     private fun startPlayAudio(position: Int) {
-        val intent = Intent(VideoService.STARTACTION)
+        val intent = Intent(mContext, VideoService.javaClass)
         intent.putExtra(VideoService.AUDIO_KEY, position)
         mContext?.startService(intent)
     }

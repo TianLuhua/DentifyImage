@@ -21,7 +21,9 @@ class VideoService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCo
         val COMMON = 0//普通
         val COVER = 99//封面
         val BRIEF = 98//简介
-        val LIST = 97//目录
+        val LIST1 = 97//目录1
+        val LIST2 = 96//目录2
+        val AUTHENTICATION = 95//认证
         val CONTENT_1 = 1 //内容
         val CONTENT_3 = 3 //内容
         val CONTENT_5 = 5 //内容
@@ -44,6 +46,30 @@ class VideoService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCo
         val CONTENT_39 = 39 //内容
         val CONTENT_41 = 41 //内容
         val CONTENT_43 = 43 //内容
+
+        val CONTENT_2 = 2 //内容
+        val CONTENT_4 = 4 //内容
+        val CONTENT_6 = 6 //内容
+        val CONTENT_8 = 8 //内容
+        val CONTENT_10 = 10 //内容
+        val CONTENT_12 = 12 //内容
+        val CONTENT_14 = 14 //内容
+        val CONTENT_16 = 16 //内容
+        val CONTENT_18 = 18 //内容
+        val CONTENT_20 = 20 //内容
+        val CONTENT_22 = 22 //内容
+        val CONTENT_24 = 24 //内容
+        val CONTENT_26 = 26 //内容
+        val CONTENT_28 = 28 //内容
+        val CONTENT_30 = 30 //内容
+        val CONTENT_32 = 32 //内容
+        val CONTENT_34 = 34 //内容
+        val CONTENT_36 = 36 //内容
+        val CONTENT_38 = 38 //内容
+        val CONTENT_40 = 40 //内容
+        val CONTENT_42 = 42 //内容
+        val CONTENT_44 = 44 //内容
+
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -85,15 +111,36 @@ class VideoService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCo
                             e.printStackTrace()
                         }
                     }
-                    LIST -> {
+
+                    AUTHENTICATION -> {
                         try {
                             stopPlayer()
-                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_list))
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_authentication))
                             mediaPlayer!!.prepare()
                         } catch (e: IOException) {
                             e.printStackTrace()
                         }
                     }
+                    LIST1 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_list1))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+
+                    LIST2 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_list2))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+
                     CONTENT_1 -> {
                         try {
                             stopPlayer()
@@ -103,6 +150,7 @@ class VideoService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCo
                             e.printStackTrace()
                         }
                     }
+
                     CONTENT_3 -> {
                         try {
                             stopPlayer()
@@ -287,6 +335,205 @@ class VideoService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCo
                         try {
                             stopPlayer()
                             mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_43))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+
+                    CONTENT_2 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_2))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_4 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_4))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_6 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_6))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_8 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_8))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_10 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_10))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_12 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_12))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_14 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_14))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_16 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_16))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_18 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_18))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_20 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_20))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_22 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_22))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_24 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_24))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_26 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_26))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_28 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_28))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_30 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_30))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_32 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_32))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_34 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_34))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_36 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_36))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_38 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_38))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_40 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_40))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_42 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_42))
+                            mediaPlayer!!.prepare()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    CONTENT_44 -> {
+                        try {
+                            stopPlayer()
+                            mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.hw3_44))
                             mediaPlayer!!.prepare()
                         } catch (e: IOException) {
                             e.printStackTrace()
