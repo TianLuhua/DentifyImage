@@ -34,7 +34,9 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
         val TAG = "MainPresenter"
         //封面的分类在百度云库中的默认分类
         val COVER_MODEL = "1,1"
+        //获取当前预览消息的what值
         private val CAMERA_MSG_POSTVIEW_FRAME = 0x040
+        //获取当前预览消息的延时
         private val CAMERA_MSG_POSTVIEW_FRAME_DELAY_TIME = 8000.toLong()
     }
 
@@ -50,9 +52,9 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
     private val client = AipImageSearch.getInstance()
     //图片相似请求接口参数
     private val params = HashMap<String, String>()
-
     //默认为封面编号
     private var classifyNumber = COVER_MODEL
+    //默认为封面模式
     private var dentifyImageModel: DentifyImageModel = DentifyImageModel.COVER
 
     private var textToSpeech: TextToSpeech? = null // TTS对象
@@ -79,7 +81,10 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
         handler.sendEmptyMessageDelayed(CAMERA_MSG_POSTVIEW_FRAME, CAMERA_MSG_POSTVIEW_FRAME_DELAY_TIME)
     }
 
-
+    /**
+     * Camera数据实时预览回调
+     *
+     */
     override fun onPreviewData(data: ByteArray, mCamera: Camera) {
         if (attachData) {
             runOnIoThread {
@@ -103,6 +108,9 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
 
     }
 
+    /**
+     * 重置当前为封面识别模式
+     */
     override fun reset() {
         dentifyImageModel = DentifyImageModel.COVER
         mRootView?.currentDentifuModel(dentifyImageModel)
@@ -110,7 +118,7 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
 
 
     /**
-     * 向百度云发送请求
+     * 向百度云发送请求,获取数据和处理逻辑
      */
     inline private fun doRequest(data: ByteArray, mCamera: Camera, before: () -> Unit) {
         before()
@@ -138,7 +146,7 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
         val brief = maxResult?.brief ?: null
         if (brief != null) {
             //识别了：可能是封面，可能是内容
-            dentifyImageModel = DentifyImageModel.COVER
+//            dentifyImageModel = DentifyImageModel.COVER
             val ss = brief.split(",")
             //封面brief信息格式：书本描述，分类1编号，分类2编号。举个栗子：火火兔绘本，1，4
             if (ss.size >= 2) {
@@ -153,18 +161,26 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
                 mRootView?.currentDentifuModel(dentifyImageModel)
                 Log.e("classifyNumber", classifyNumber)
                 startPlayAudio(VideoService.CONTENT)
+                mRootView!!.updateUI(brief)
                 return
             }
             //封面
             startPlayAudio(VideoService.COVER)
+            mRootView!!.updateUI(brief)
 
         } else {
             //没有识别
+            //如果处于内容识别模式，没有识别的情况下就不在任何处理。如果是封面模式的话，没有识别就提示用户。
+            if (dentifyImageModel == DentifyImageModel.CONTENT)
+                return
             startPlayAudio(VideoService.COMMON)
+            mRootView!!.updateUI("我不认识这本书！")
         }
-        mRootView!!.updateUI(brief ?: "我不认识这本书！")
     }
 
+    /**
+     * 播放对应绘本的音频
+     */
     private fun startPlayAudio(position: Int) {
         val intent = Intent(VideoService.STARTACTION)
         intent.putExtra(VideoService.AUDIO_KEY, position)

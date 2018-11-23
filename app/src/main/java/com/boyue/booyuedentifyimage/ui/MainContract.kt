@@ -12,10 +12,22 @@ import com.boyue.booyuedentifyimage.base.IPresenter
 class MainContract {
     interface View : IBaseView {
 
+        /**
+         * 更新预览图
+         * @param bitmap 根据摄像头抓取的数据生成的 bitmap
+         */
         fun setBitmap(bitmap: Bitmap?)
 
+        /**
+         * 当前识别模式通知到Ui界面
+         * @param dentifyImageModel 当前处于的识别模式（识别模式分为：封面识别模式、内容识别模式）
+         */
         fun currentDentifuModel(dentifyImageModel: DentifyImageModel)
 
+        /**
+         * 百度云返回的数据来更新UI
+         * @param msg 主要的是来自百度云的 brief信息
+         */
         fun updateUI(msg: String)
 
     }
@@ -29,6 +41,8 @@ class MainContract {
 
         /**
          * 摄像头数据实时回调
+         * @param data　具体的数据（该数据为YUV格式，百度接口不适用需要在调用接口前转换）
+         * @param mCamera 获取图片数据的Camera
          */
         fun onPreviewData(data: ByteArray, mCamera: Camera)
 

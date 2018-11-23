@@ -63,10 +63,9 @@ class VideoService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCo
                         }
                     }
 
-                    //如果是普通模式的话，就让机器把提示音播放完在波下一个提示音。
+                    //如果是普通模式（就是没有查找到任何信息的状态下）的话，就让机器把当前提示音播放完。
                     COMMON -> {
                         if (!mediaPlayer!!.isPlaying) {
-                            //这里播放一般的提示音,比如：读书前先让我看看绘本封面之类的。
                             try {
                                 stopPlayer()
                                 mediaPlayer!!.setDataSource(application, Uri.parse("android.resource://" + packageName + "/" + R.raw.common))
@@ -77,7 +76,6 @@ class VideoService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCo
                         } else {
                             //正在播，不在任何处理
                         }
-
                     }
                 }
             }
@@ -85,6 +83,9 @@ class VideoService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCo
         return Service.START_STICKY
     }
 
+    /**
+     * 停止当前的播放
+     */
     private fun stopPlayer() {
         if (mediaPlayer == null) return
         if (mediaPlayer!!.isPlaying()) {
