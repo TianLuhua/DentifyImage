@@ -88,7 +88,7 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
     override fun onPreviewData(data: ByteArray, mCamera: Camera) {
         if (attachData) {
             runOnIoThread {
-                Log.e(TAG, "onPreviewData")
+                //                Log.e(TAG, "onPreviewData")
                 doRequest(data, mCamera) {
                     attachData = false
                 }
@@ -149,7 +149,8 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
 //            dentifyImageModel = DentifyImageModel.COVER
             val ss = brief.split(",")
             //封面brief信息格式：书本描述，分类1编号，分类2编号。举个栗子：火火兔绘本，1，4
-            if (ss.size >= 2) {
+            //第一次识别分封面
+            if (ss.size > 2) {
                 //内容
                 val classifyBuilder = StringBuilder()
                 classifyBuilder.append(ss[ss.size - 2])
@@ -159,14 +160,39 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
                 //当前是内容识别模式
                 dentifyImageModel = DentifyImageModel.CONTENT
                 mRootView?.currentDentifuModel(dentifyImageModel)
-                Log.e("classifyNumber", classifyNumber)
-                startPlayAudio(VideoService.CONTENT)
+                Log.e(TAG, "classifyNumber:" + classifyNumber)
+                startPlayAudio(VideoService.COVER)
                 mRootView!!.updateUI(brief)
                 return
+            } else if (ss.size == 2) {
+                //内容识别
+                dentifyImageModel = DentifyImageModel.CONTENT
+                mRootView?.currentDentifuModel(dentifyImageModel)
+                val numberOfcontent = ss[1]
+                val brief = with(StringBuilder()) {
+                    this.append(ss[0])
+                    append("第")
+                    append(ss[1])
+                    append("页")
+                    this.toString()
+                }
+                if (ss[1] == "list") {
+                    startPlayAudio(VideoService.LIST)
+                } else if (ss[1] == "brief") {
+                    startPlayAudio(VideoService.BRIEF)
+                } else {
+                    startPlayAudio(numberOfcontent.toInt())
+                }
+                mRootView!!.updateUI(brief)
+                Log.e(TAG, "content:" + numberOfcontent)
+
+                return
+            } else {
+                Log.e(TAG, "注意  注意  注意 ！！" + brief)
             }
-            //封面
-            startPlayAudio(VideoService.COVER)
-            mRootView!!.updateUI(brief)
+//            //封面
+//            startPlayAudio(VideoService.COVER)
+//            mRootView!!.updateUI(brief)
 
         } else {
             //没有识别
