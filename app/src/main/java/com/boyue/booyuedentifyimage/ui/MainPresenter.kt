@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream
 import java.util.*
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
+import com.booyue.utils.ToastUtils
 import com.boyue.booyuedentifyimage.service.VideoService
 
 
@@ -203,7 +204,7 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
             if (dentifyImageModel == DentifyImageModel.CONTENT)
                 return
             startPlayAudio(VideoService.COMMON)
-            mRootView!!.updateUI("我不认识这本书！")
+            mRootView?.updateUI("我不认识这本书！")?:ToastUtils.showToast("我不认识这本书！")
         }
     }
 
@@ -211,8 +212,13 @@ class MainPresenter() : BasePresenter<MainContract.View>(), MainContract.Present
      * 播放对应绘本的音频
      */
     private fun startPlayAudio(position: Int) {
-        val intent = Intent(mContext, VideoService.javaClass)
+        val intent = Intent(VideoService.STARTACTION)
         intent.putExtra(VideoService.AUDIO_KEY, position)
         mContext?.startService(intent)
+    }
+
+    override fun detachView() {
+        super.detachView()
+        attachData = false
     }
 }

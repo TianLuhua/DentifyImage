@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
         mainPresenter.attachView(this)
         initView()
         if (hasPermission()) {
-            init()
+            initCamera()
         } else {
             requestPermission()
         }
@@ -55,18 +55,18 @@ class MainActivity : AppCompatActivity(), MainContract.View {
     override fun onResume() {
         super.onResume()
         mainPresenter.initPresenter()
-        init()
+        initCamera()
+        startPreView()
     }
 
 
     override fun onPause() {
         super.onPause()
-        closeCamera()
+        stopPreview()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        closeCamera()
         mainPresenter.detachView()
     }
 
@@ -90,21 +90,6 @@ class MainActivity : AppCompatActivity(), MainContract.View {
     }
 
     /**
-     * 初始化数据
-     */
-    private fun init() {
-        // 创建Camera实例
-        initCamera()
-        if (mCamera != null) {
-            // 创建Preview view并将其设为activity中的内容
-            mPreview = CameraPreview(this, mCamera)
-            camera_preview!!.addView(mPreview, 0)
-        } else {
-            Toast.makeText(this@MainActivity, "打开摄像头失败", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    /**
      * 检查Camera和读写SD卡权限
      */
     private fun hasPermission(): Boolean {
@@ -122,10 +107,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
      */
     private fun requestPermission() {
         if (Build.VERSION.SDK_INT >= 23/*Build.VERSION.M*/) {
-            if (shouldShowRequestPermissionRationale(PERMISSIONS_CAMERA) || shouldShowRequestPermissionRationale(PERMISSIONS_STORAGE)) {
-                ToastUtils.showLongToast("Camera AND storage permission are required for this demo")
-                ActivityCompat.requestPermissions(this@MainActivity, arrayOf(PERMISSIONS_CAMERA, PERMISSIONS_STORAGE), REQUESTCODE)
-            }
+            ActivityCompat.requestPermissions(this@MainActivity, arrayOf(PERMISSIONS_CAMERA, PERMISSIONS_STORAGE), REQUESTCODE)
         }
     }
 
@@ -138,7 +120,7 @@ class MainActivity : AppCompatActivity(), MainContract.View {
                 it == PackageManager.PERMISSION_GRANTED
             }.let {
                 if (it.size == 2) {
-                    init()
+                    initCamera()
                 } else {
                     ToastUtils.showLongToast("请到设置界面赋予APP于Camera和读取内存卡的权限！")
                 }
@@ -148,16 +130,14 @@ class MainActivity : AppCompatActivity(), MainContract.View {
     }
 
     /**
-     * 初始化摄像头参数
+     * 初始化摄像头
      */
+    @Synchronized
     private fun initCamera() {
         //设备支持摄像头才创建实例
         if (application.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-            mCamera = VcCamera(this@MainActivity)//打开硬件摄像头，这里导包得时候一定要注意是android.hardware.Camera
-            mCamera!!.setVcPreviewCallback { data, c ->
-//                Log.e(TAG, "setVcPreviewCallback")
-                mainPresenter.checkViewAttached()
-                mainPresenter.onPreviewData(data, c)
+            if (mCamera == null) {
+                mCamera = VcCamera(this@MainActivity)//打开硬件摄像头，这里导包得时候一定要注意是android.hardware.Camera
             }
         } else {
             ToastUtils.showToast(R.string.nonsupport_camera)
@@ -165,9 +145,27 @@ class MainActivity : AppCompatActivity(), MainContract.View {
     }
 
     /**
+     *初始化预览
+     */
+    private fun startPreView() {
+        if (mCamera != null) {
+            // 创建Preview view并将其设为activity中的内容
+            mPreview = CameraPreview(this, mCamera)
+            camera_preview!!.addView(mPreview, 0)
+            mCamera!!.setVcPreviewCallback { data, c ->
+                //                Log.e(TAG, "setVcPreviewCallback")
+                mainPresenter.checkViewAttached()
+                mainPresenter.onPreviewData(data, c)
+            }
+        } else {
+            Toast.makeText(this@MainActivity, "打开摄像头失败", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
      * 关闭相机
      */
-    private fun closeCamera() {
+    private fun stopPreview() {
         if (mCamera != null) {
             mCamera!!.closeCamera()
             mCamera = null
