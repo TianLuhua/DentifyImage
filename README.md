@@ -20,7 +20,7 @@
 
    **2.2返回结果**
    
->[接口说明可参考](https://cloud.baidu.com/doc/IMAGESEARCH/ImageSearch-Java-SDK.html#.79.8E.7C.59.B8.AB.1C.41.6A.17.1F.63.97.AF.BB.9B)    
+>接口说明可参考[点这里](https://cloud.baidu.com/doc/IMAGESEARCH/ImageSearch-Java-SDK.html#.79.8E.7C.59.B8.AB.1C.41.6A.17.1F.63.97.AF.BB.9B)    
    
 
 ## 更新记录
